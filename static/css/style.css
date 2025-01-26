@@ -1,0 +1,27 @@
+.description {
+
+}
+
+.btn-filter {
+    background-color: #1E5945 !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+.btn-purple {
+    background-color: #CD5C5C !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+.btn-purple:hover {
+    background-color: #30BA8F; /* Более светлый сиреневый для наведения */
+    color: #fff;
+}
+
+
+.btn-detail {
+    background-color: #50C878 !important;
+    color: #fff !important;
+    border: none !important;
+}

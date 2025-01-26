@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<h1>Корзина</h1>
+
+{% if cart_items %}
+    <ul>
+        {% for item in cart_items %}
+            <li>Продукт ID: {{ item.product_id }} — Количество: {{ item.quantity }}</li>
+        {% endfor %}
+    </ul>
+    <!--a href="{% url 'order_create' %}" class="btn btn-success">Оформить заказ</a-->
+
+    <form action="{% url 'order_create' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">Оформить заказ</button>
+</form>
+
+
+{% else %}
+    <p>Ваша корзина пуста.</p>
+{% endif %}
+{% endblock %}

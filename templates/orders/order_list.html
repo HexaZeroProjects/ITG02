@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Ваши заказы{% endblock %}
+
+{% block content %}
+<h1>Ваши заказы</h1>
+
+{% for order in orders %}
+    <div class="order">
+        <h3>Заказ #{{ order.id }}</h3>
+        <p>Дата создания: {{ order.created_at }}</p>
+        <p>Статус: {{ order.get_status_display }}</p>
+        <p>Адрес доставки: {{ order.delivery_address }}</p>
+        <h4>Товары в заказе:</h4>
+        <ul>
+            {% for item in order.items.all %}
+                <li>Продукт ID: {{ item.product_id }} — {{ item.quantity }} шт.</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% empty %}
+    <p>У вас пока нет заказов.</p>
+{% endfor %}
+{% endblock %}
