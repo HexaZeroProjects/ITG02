@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'core',  # вместо апи так как проект небольшой
     'reviews',
     'mngorder',
-    'analytics'
+    'analytics',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -86,6 +87,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# AUTH_USER_MODEL = 'users.CustomUser'
+LOGIN_URL = '/users/login/'
+LOGOUT_REDIRECT_URL = '/'
 
 
 # Password validation

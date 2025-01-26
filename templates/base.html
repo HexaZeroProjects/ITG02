@@ -18,6 +18,23 @@
             <a href="{% url 'cart_view' %}" class="btn btn-primary">Перейти в корзину</a>
             <a href="{% url 'manage_order_list' %}" class="btn btn-primary">Список заказов</a>
 
+
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">FlowerDelivery</a>
+        <div class="ml-auto">
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="btn btn-secondary">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary">Вход</a>
+                <a href="{% url 'register' %}" class="btn btn-success">Регистрация</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+
+
         </div>
     </nav>
     <div class="container my-4">

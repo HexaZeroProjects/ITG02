@@ -27,4 +27,5 @@ urlpatterns = [
     path('reviews/', include('reviews.urls')),
     path('manage-orders/', include('mngorder.urls')),  # Модуль управления заказами
     path('analytics/', include('analytics.urls')),
+    path('users/', include('users.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

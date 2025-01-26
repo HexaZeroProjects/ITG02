@@ -4,33 +4,32 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Order, OrderItem
 from core.services import get_product_data  # Запросы через сервисный слой
 
+
 class OrderCreateView(LoginRequiredMixin, View):
     def post(self, request):
-        """
-        Создание нового заказа из корзины через сервисный слой.
-        """
         cart = request.session.get('cart', {})
         if not cart:
-            return redirect('product_list')  # Если корзина пуста, возвращаем в каталог
+            return redirect('product_list')
+
+        # Добавляем отладочный вывод
+        print(f"Пользователь: {request.user} (ID: {request.user.id})")
+        print(f"Корзина: {cart}")
 
         order = Order.objects.create(
-            user=request.user,
+            user=request.user,  # Здесь возможна проблема
             delivery_address=request.POST.get('delivery_address', '')
         )
 
         for product_id, item in cart.items():
-            product_data = get_product_data(product_id)  # Данные о продукте из `core`
+            product_data = get_product_data(product_id)
             if product_data:
                 OrderItem.objects.create(
                     order=order,
-                    product_id=product_data['id'],  # Храним ID продукта
+                    product_id=product_data['id'],
                     quantity=item['quantity']
                 )
-            else:
-                # Если продукт не найден, игнорируем его
-                continue
 
-        request.session['cart'] = {}  # Очищаем корзину после создания заказа
+        request.session['cart'] = {}
         return redirect('order_list')
 
 

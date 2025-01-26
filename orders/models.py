@@ -4,11 +4,14 @@ from django.db import models
 # orders/models.py
 
 from django.db import models
+
+from FlowerDelivery import settings
 from catalog.models import Product
 from django.contrib.auth.models import User
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
     delivery_address = models.TextField()
     status = models.CharField(max_length=20, choices=(
@@ -18,8 +21,8 @@ class Order(models.Model):
         ('canceled', 'Отменен')
     ), default='pending')
 
-    def __str__(self):
-        return f"Заказ {self.id} от {self.user.username}"
+    # def __str__(self):
+    #     return f"Заказ {self.id} от {self.user.username}"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
