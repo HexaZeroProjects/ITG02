@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'catalog',  # Модуль каталога товаров
     'orders',
     'core',  # вместо апи так как проект небольшой
+    'reviews',
+    'mngorder',
+    'analytics'
 ]
 
 MIDDLEWARE = [

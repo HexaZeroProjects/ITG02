@@ -25,8 +25,9 @@
 
 
 <!-- Список товаров -->
+<!-- Список товаров -->
 <div class="row">
-    {% for product in products %}
+    {% for product, avg_rating in products_with_ratings %}
         <div class="col-md-3">
             <div class="card mb-4">
                 <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
@@ -34,7 +35,14 @@
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text description text-truncate">{{ product.description|safe }}</p>
                     <p class="card-text"><strong>Цена: {{ product.price }} руб.</strong></p>
-                    <!---a href="#" class="btn btn-purple btn-sm">Купить</a-->
+
+                    <p>
+                        {% if avg_rating %}
+                            Средняя оценка: {{ avg_rating }} / 5
+                        {% else %}
+                            Оценок пока нет.
+                        {% endif %}
+                    </p>
 
                     <form action="{% url 'add_to_cart' product.id %}" method="post" style="display: inline;">
                         {% csrf_token %}
@@ -50,6 +58,7 @@
         <p class="text-center">Товары не найдены.</p>
     {% endfor %}
 </div>
+
 
 
 

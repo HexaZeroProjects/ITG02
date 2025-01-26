@@ -10,4 +10,35 @@
 
         <a href="/" class="btn btn-filter btn-sm">Назад к каталогу</a>
     </div>
+
+    <h3>Отзывы</h3>
+    {% if product.reviews.all %}
+        <ul>
+            {% for review in product.reviews.all %}
+                <li>
+                    <strong>{{ review.user.username }}</strong> (Оценка: {{ review.rating }}/5):
+                    <p>{{ review.review_text }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Отзывов пока нет. Будьте первым!</p>
+    {% endif %}
+
+    <h3>Добавить отзыв</h3>
+    <form action="{% url 'add_review' product.id %}" method="post">
+        {% csrf_token %}
+        <textarea name="review_text" placeholder="Напишите свой отзыв" required></textarea><br>
+        <label for="rating">Оценка:</label>
+        <select name="rating" id="rating" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select><br>
+        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+    </form>
+
+
 {% endblock %}

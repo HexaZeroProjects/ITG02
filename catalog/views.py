@@ -1,5 +1,7 @@
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
+
+from core.services import get_average_rating
 from .models import Product
 from django.http import JsonResponse
 from django.views import View
@@ -11,6 +13,14 @@ class ProductListView(ListView):
     template_name = 'catalog/product_list.html'
     context_object_name = 'products'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        products = context['products']
+        products_with_ratings = [
+            (product, get_average_rating(product.id)) for product in products
+        ]
+        context['products_with_ratings'] = products_with_ratings
+        return context
 
     def get_queryset(self):
         queryset = Product.objects.all()

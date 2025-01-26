@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Изменение статуса заказа{% endblock %}
+
+{% block content %}
+<h1>Изменение статуса заказа</h1>
+<form method="post">
+    {% csrf_token %}
+    <p>Заказ ID: {{ order.id }}</p>
+    <p>Пользователь: {{ order.user.username }}</p>
+    <p>Адрес доставки: {{ order.delivery_address }}</p>
+    <label for="status">Статус:</label>
+    <select name="status" id="status">
+        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Ожидает обработки</option>
+        <option value="in_process" {% if order.status == 'in_process' %}selected{% endif %}>В процессе</option>
+        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Доставлен</option>
+        <option value="canceled" {% if order.status == 'canceled' %}selected{% endif %}>Отменён</option>
+    </select>
+    <br><br>
+    <button type="submit" class="btn btn-success">Сохранить изменения</button>
+</form>
+{% endblock %}

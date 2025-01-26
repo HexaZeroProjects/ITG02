@@ -22,6 +22,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('catalog.urls')),
-    path('orders/', include('orders.urls')),
+    path('orders/', include('orders.urls')),  # Модуль оформления заказов
     path('core/', include('core.urls')),
+    path('reviews/', include('reviews.urls')),
+    path('manage-orders/', include('mngorder.urls')),  # Модуль управления заказами
+    path('analytics/', include('analytics.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
