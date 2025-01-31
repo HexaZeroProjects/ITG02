@@ -1,23 +1,132 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="product-detail">
-        <h1>{{ product.name }}</h1>
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 400px;">
-        <p>{{ product.description }}</p>
-        <p>Цена: {{ product.price }} руб.</p>
-        <p><a href="#" class="btn btn-purple btn-sm">Купить</a></p>
 
-        <a href="/" class="btn btn-filter btn-sm">Назад к каталогу</a>
+
+<div class="card mb-12" style="max-width: 100%">
+    <div class="row g-0">
+        <!-- Изображение -->
+        <div class="col-md-4">
+            <img src="{{ product.image.url }}" class="img-fluid rounded-start" alt="{{ product.name }}">
+        </div>
+
+        <!-- Основной контент -->
+        <div class="col-md-8 d-flex flex-column">
+            <div class="card-body">
+                <h3 class="card-title">{{ product.name }}</h3>
+                <p class="card-text">{{ product.description }}</p>
+
+            </div>
+
+            <!-- Блок с ценой и кнопками -->
+            <div class="mt-auto m-4">
+                
+                                <p class="card-text">
+                    <small class="text-body-secondary">
+                        {% if average_rating %}
+                            Средняя оценка: {{ average_rating }} / 5
+                        {% else %}
+                            Оценок пока нет
+                        {% endif %}
+                    </small>
+                </p>
+                
+                <p class="card-text bg-success-subtle p-3 mb-2">Цена: {{ product.price }} руб.</p>
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="#" class="btn btn-purple">Купить</a>
+                    <a href="/" class="btn btn-filter">Назад к каталогу</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Форма добавления отзыва -->
+    <div class="container mt-4">
+        <h3>Добавить отзыв</h3>
+        <form action="{% url 'add_review' product.id %}" method="post" class="d-flex align-items-stretch gap-3">
+            {% csrf_token %}
+
+            <!-- Левая часть: поле для отзыва -->
+            <div class="flex-grow-1">
+            <textarea
+                    name="review_text"
+                    class="form-control h-100"
+                    placeholder="Напишите свой отзыв"
+                    required
+                    style="resize: none;"
+            ></textarea>
+            </div>
+
+            <!-- Правая часть: оценка и кнопка -->
+            <div class="d-flex flex-column justify-content-end">
+                <!-- Оценка -->
+                <div class="mb-2">
+                    <label for="rating" class="form-label">Оценка:</label>
+                    <select name="rating" id="rating" class="form-select" required>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <!-- Кнопка -->
+                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+            </div>
+        </form>
     </div>
 
+
     <h3>Отзывы</h3>
+
     {% if product.reviews.all %}
-        <ul>
+        <ul style="list-style: none;">
             {% for review in product.reviews.all %}
                 <li>
-                    <strong>{{ review.user.username }}</strong> (Оценка: {{ review.rating }}/5):
-                    <p>{{ review.review_text }}</p>
+                    <!-- Отзывы с оценкой 4 или 5 -->
+                    {% if review.rating >= 4 %}
+                        <div class="card border-success mb-3">
+                            <div class="card-body text-success">
+                                <h5 class="card-title">
+                                    <strong>{{ review.user.username }}</strong> (Оценка: {{ review.rating }}/5)
+                                </h5>
+                                <p class="card-text">{{ review.review_text }}</p>
+{#                                <p class="card-text">#}
+{#                                    <small class="text-body-secondary">Last updated 3 mins ago</small>#}
+{#                                </p>#}
+                            </div>
+                        </div>
+
+                        <!-- Отзывы с оценкой 3 -->
+                    {% elif review.rating == 3 %}
+                        <div class="card border-primary mb-3">
+                            <div class="card-body text-primary">
+                                <h5 class="card-title">
+                                    <strong>{{ review.user.username }}</strong> (Оценка: {{ review.rating }}/5)
+                                </h5>
+                                <p class="card-text">{{ review.review_text }}</p>
+{#                                <p class="card-text">#}
+{#                                    <small class="text-body-secondary">Last updated 3 mins ago</small>#}
+{#                                </p>#}
+                            </div>
+                        </div>
+
+                        <!-- Отзывы с оценкой 1 или 2 -->
+                    {% else %}
+                        <div class="card border-danger mb-3">
+                            <div class="card-body text-danger">
+                                <h5 class="card-title">
+                                    <strong>{{ review.user.username }}</strong> (Оценка: {{ review.rating }}/5)
+                                </h5>
+                                <p class="card-text">{{ review.review_text }}</p>
+{#                                <p class="card-text">#}
+{#                                    <small class="text-body-secondary">Last updated 3 mins ago</small>#}
+{#                                </p>#}
+                            </div>
+                        </div>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
@@ -25,20 +134,7 @@
         <p>Отзывов пока нет. Будьте первым!</p>
     {% endif %}
 
-    <h3>Добавить отзыв</h3>
-    <form action="{% url 'add_review' product.id %}" method="post">
-        {% csrf_token %}
-        <textarea name="review_text" placeholder="Напишите свой отзыв" required></textarea><br>
-        <label for="rating">Оценка:</label>
-        <select name="rating" id="rating" required>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select><br>
-        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
-    </form>
+
 
 
 {% endblock %}

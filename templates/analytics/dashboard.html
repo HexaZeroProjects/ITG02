@@ -1,10 +1,62 @@
-{% extends 'base.html' %}
-
-{% block title %}Аналитика{% endblock %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<h1>Аналитика</h1>
+    <div class="container">
+        <h1>Аналитика и отчеты</h1>
 
-<p>Общее количество заказов: {{ total_orders }}</p>
-<p>Общая прибыль: {{ total_profit }} руб.</p>
+        <!-- Общая информация -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Общее количество заказов</h5>
+                        <p class="card-text">{{ total_orders }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Общая прибыль</h5>
+                        <p class="card-text">{{ total_profit }} руб.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- График: Заказы по статусам -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Заказы по статусам</h5>
+                {{ status_chart|safe }}
+            </div>
+        </div>
+
+        <!-- График: Заказы за разные периоды -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Заказы за разные периоды</h5>
+                {{ time_period_chart|safe }}
+            </div>
+        </div>
+
+        <!-- График: Заказы за последние 12 месяцев -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Завершенные заказы за последние 12 месяцев</h5>
+                {{ monthly_orders_chart|safe }}
+            </div>
+        </div>
+
+        <!-- График: Заказы за последние 12 месяцев -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Отменённые заказы за последние 12 месяцев</h5>
+        {{ cancel_orders_chart|safe }}
+    </div>
+</div>
+
+
+    </div>
 {% endblock %}

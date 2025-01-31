@@ -3,3 +3,4 @@ djangorestframework==3.14.0
 aiogram==3.0.0b7
 django-cors-headers==4.0.0
 Pillow==10.0.1
+plotly

@@ -2,6 +2,7 @@ from django.views.generic import ListView, DetailView
 from django.db.models import Q
 
 from core.services import get_average_rating
+
 from .models import Product
 from django.http import JsonResponse
 from django.views import View
@@ -34,9 +35,27 @@ class ProductListView(ListView):
 
         return queryset
 
+# class ProductDetailView(DetailView):
+#     model = Product
+#     template_name = 'catalog/product_detail.html'
+#     context_object_name = 'product'
+
 class ProductDetailView(DetailView):
     model = Product
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
 
+    def get_context_data(self, **kwargs):
+        # Получаем контекст от родительского класса
+        context = super().get_context_data(**kwargs)
 
+        # Получаем текущий продукт
+        product = self.get_object()
+
+        # Получаем среднюю оценку для продукта с помощью сервисной функции
+        average_rating = get_average_rating(product.id)
+
+        # Добавляем среднюю оценку в контекст
+        context['average_rating'] = average_rating
+
+        return context
