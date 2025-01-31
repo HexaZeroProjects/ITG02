@@ -3,25 +3,54 @@
 {% block title %}Корзина{% endblock %}
 
 {% block content %}
-<h1>Корзина</h1>
+<div class="container mt-4">
+    <h1>Корзина</h1>
 
-{% if cart_items %}
-    <ul>
-        {% for item in cart_items %}
-            <li>Продукт ID: {{ item.product_id }} — Количество: {{ item.quantity }}</li>
-        {% endfor %}
-    </ul>
-    <!--a href="{% url 'order_create' %}" class="btn btn-success">Оформить заказ</a-->
+    {% if cart_items %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th>Количество</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                        <tr>
+                            <td>Артикул: {{ item.product_id }} - Товар : {{ item.product.name }}</td>
+                            <td>
+                                <form action="{% url 'update_cart' item.product_id %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control" style="width: 80px;">
+                                        <button type="submit" class="btn btn-outline-primary">Обновить</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td>
+                                <a href="{% url 'remove_from_cart' item.product_id %}" class="btn btn-outline-danger">Удалить</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <form action="{% url 'order_create' %}" method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-success">Оформить заказ</button>
-</form>
+        <div class="mt-3">
+            <form action="{% url 'order_create' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Оформить заказ</button>
+            </form>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Ваша корзина пуста.
+        </div>
+    {% endif %}
 
-
-{% else %}
-    <p>Ваша корзина пуста.</p>
-{% endif %}
-<br>
-    <a href="/" class="btn btn-filter btn-sm">Назад к каталогу</a>
+    <br>
+    <a href="/" class="btn btn-secondary">Назад к каталогу</a>
+</div>
 {% endblock %}

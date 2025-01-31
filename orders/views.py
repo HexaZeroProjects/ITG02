@@ -1,9 +1,12 @@
-from django.shortcuts import render, redirect
+from django.http import Http404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Order, OrderItem
-from core.services import get_product_data  # Запросы через сервисный слой
+from django.views.generic import ListView, DetailView
 
+from .models import Order, OrderItem
+from core.services import get_product_data, get_order_items, get_order_by_id  # Запросы через сервисный слой
+from core.services import get_cart_items  # Импортируем сервис
 
 class OrderCreateView(LoginRequiredMixin, View):
     def post(self, request):
@@ -62,12 +65,102 @@ class CartView(View):
     """
     Отображение корзины пользователя.
     """
+    # def get(self, request):
+    #     cart = request.session.get('cart', {})
+    #     cart_items = []
+    #     for product_id, item in cart.items():
+    #         cart_items.append({
+    #             'product_id': product_id,
+    #             '': product_id,
+    #             'quantity': item['quantity']
+    #         })
+    #     return render(request, 'orders/cart.html', {'cart_items': cart_items})
     def get(self, request):
         cart = request.session.get('cart', {})
-        cart_items = []
-        for product_id, item in cart.items():
-            cart_items.append({
-                'product_id': product_id,
-                'quantity': item['quantity']
-            })
+        cart_items = get_cart_items(cart)  # Используем сервис
         return render(request, 'orders/cart.html', {'cart_items': cart_items})
+
+from core.services import get_user_orders
+
+class MyOrdersView(LoginRequiredMixin, ListView):
+    template_name = 'users/my_orders.html'
+    context_object_name = 'orders'
+
+    def get_queryset(self):
+        # Используем сервисный слой для получения заказов
+        return get_user_orders(self.request.user)
+
+
+class OrderDetailView(LoginRequiredMixin, DetailView):
+    template_name = 'users/order_detail.html'
+    context_object_name = 'order'
+
+    def get_object(self):
+        order_id = self.kwargs.get('pk')
+        # Используем сервисный слой для получения заказа
+        order = get_order_by_id(order_id, self.request.user)
+        if not order:
+            raise Http404("Заказ не найден")
+        return order
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Используем сервисный слой для получения товаров в заказе
+        context['items'] = get_order_items(self.object)
+        return context
+
+
+class BuyAgainItemView(View):
+    def get(self, request, item_id):
+        item = get_object_or_404(OrderItem, id=item_id)
+        cart = request.session.get('cart', {})
+        product_id = str(item.product_id)
+
+        if product_id in cart:
+            cart[product_id]['quantity'] += item.quantity
+        else:
+            cart[product_id] = {
+                'quantity': item.quantity
+            }
+
+        request.session['cart'] = cart
+        return redirect('cart_view')
+
+
+class ReorderView(View):
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)
+        cart = request.session.get('cart', {})
+
+        for item in order.items.all():
+            product_id = str(item.product_id)
+            if product_id in cart:
+                cart[product_id]['quantity'] += item.quantity
+            else:
+                cart[product_id] = {
+                    'quantity': item.quantity
+                }
+
+        request.session['cart'] = cart
+        return redirect('cart_view')
+
+
+class UpdateCartView(View):
+    def post(self, request, product_id):
+        cart = request.session.get('cart', {})
+        quantity = int(request.POST.get('quantity', 1))
+
+        if quantity > 0:
+            cart[str(product_id)] = {'quantity': quantity}
+        else:
+            cart.pop(str(product_id), None)
+
+        request.session['cart'] = cart
+        return redirect('cart_view')
+
+class RemoveFromCartView(View):
+    def get(self, request, product_id):
+        cart = request.session.get('cart', {})
+        cart.pop(str(product_id), None)
+        request.session['cart'] = cart
+        return redirect('cart_view')

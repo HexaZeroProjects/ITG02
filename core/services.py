@@ -106,3 +106,45 @@ def get_order_sales_data(order_id):
             'total_items': 0,
             'total_amount': 0
         }
+
+
+def update_delivery_address(order_id, new_delivery_address):
+    """
+    Обновляет адрес доставки для указанного заказа.
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+        order.delivery_address = new_delivery_address
+        order.save()
+    except Order.DoesNotExist:
+        pass  # Если заказ не найден, ничего не делаем
+
+
+def get_user_orders(user):
+    """
+    Получает все заказы пользователя.
+    """
+    return Order.objects.filter(user=user).order_by('-created_at')
+
+def get_order_items(order):
+    """
+    Получает все товары в заказе.
+    """
+    return order.items.all()
+
+from catalog.models import Product
+
+def get_cart_items(cart):
+    """
+    Получает данные о товарах в корзине.
+    Возвращает список словарей с информацией о товарах.
+    """
+    cart_items = []
+    for product_id, item in cart.items():
+        product = Product.objects.get(id=product_id)
+        cart_items.append({
+            'product_id': product_id,
+            'product': product,  # Объект товара
+            'quantity': item['quantity']
+        })
+    return cart_items

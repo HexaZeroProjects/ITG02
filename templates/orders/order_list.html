@@ -3,24 +3,47 @@
 {% block title %}Ваши заказы{% endblock %}
 
 {% block content %}
-    <br>
-    <a href="/" class="btn btn-filter btn-sm">Назад к каталогу</a>
-<h1>Ваши заказы</h1>
-
-{% for order in orders %}
-    <div class="order">
-        <h3>Заказ #{{ order.id }}</h3>
-        <p>Дата создания: {{ order.created_at }}</p>
-        <p>Статус: {{ order.get_status_display }}</p>
-        <p>Адрес доставки: {{ order.delivery_address }}</p>
-        <h4>Товары в заказе:</h4>
-        <ul>
-            {% for item in order.items.all %}
-                <li>Продукт ID: {{ item.product_id }} — {{ item.quantity }} шт.</li>
-            {% endfor %}
-        </ul>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Ваши заказы</h1>
+        <a href="/" class="btn btn-primary btn-sm">Назад к каталогу</a>
     </div>
-{% empty %}
-    <p>У вас пока нет заказов.</p>
-{% endfor %}
+
+    {% if orders %}
+        <div class="list-group">
+            {% for order in orders %}
+                <div class="list-group-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>Заказ #{{ order.id }}</h3>
+                        <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                    </div>
+                    <p class="text-muted">Дата создания: {{ order.created_at }}</p>
+                    <p><strong>Адрес доставки:</strong> {{ order.delivery_address }}</p>
+                    <h4>Товары в заказе:</h4>
+                    <ul class="list-group list-group-flush">
+                        {% for item in order.items.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    Продукт ID: {{ item.product_id }} — {{ item.product.name }} — {{ item.quantity }} шт.
+                                </div>
+                                <a href="{% url 'buy_again_item' item.id %}" class="btn btn-sm btn-outline-success">
+                                    Купить снова
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="mt-3">
+                        <a href="{% url 'reorder' order.id %}" class="btn btn-primary">
+                            Заказать повторно
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            У вас пока нет заказов.
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

@@ -46,3 +46,19 @@ class CustomLoginView(LoginView):
             return '/analytics/'  # URL аналитики
         # Перенаправление обычного пользователя
         return '/'  # Главная страница
+
+
+from django.views.generic.edit import UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from .models import UserProfile
+from .forms import UserProfileForm
+
+class ProfileView(LoginRequiredMixin, UpdateView):
+    model = UserProfile
+    form_class = UserProfileForm
+    template_name = 'users/profile.html'
+    success_url = reverse_lazy('profile')
+
+    def get_object(self):
+        return self.request.user.profile
