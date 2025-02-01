@@ -17,5 +17,10 @@ urlpatterns = [
 
     path('buy-again-item/<int:item_id>/', BuyAgainItemView.as_view(), name='buy_again_item'),
     path('reorder/<int:order_id>/', ReorderView.as_view(), name='reorder'),
+
+    path("botadmin/orders/", admin_get_orders, name="bot_admin_get_orders"),
+
+
+
 ]
 

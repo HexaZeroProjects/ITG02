@@ -7,6 +7,9 @@ from django.views.generic import ListView, DetailView
 from .models import Order, OrderItem
 from core.services import get_product_data, get_order_items, get_order_by_id  # Запросы через сервисный слой
 from core.services import get_cart_items  # Импортируем сервис
+from core.services import get_user_orders
+from django.http import JsonResponse
+from core.services_bot import get_admin_orders  # Импортируем функцию из services_bot
 
 class OrderCreateView(LoginRequiredMixin, View):
     def post(self, request):
@@ -18,11 +21,17 @@ class OrderCreateView(LoginRequiredMixin, View):
         print(f"Пользователь: {request.user} (ID: {request.user.id})")
         print(f"Корзина: {cart}")
 
+        # Получаем адрес из профиля пользователя
+        user_profile = request.user.profile
+        default_delivery_address = user_profile.address if user_profile.address else 'Не указано'
+
+        # Создаем заказ
         order = Order.objects.create(
-            user=request.user,  # Здесь возможна проблема
-            delivery_address=request.POST.get('delivery_address', '')
+            user=request.user,
+            delivery_address=request.POST.get('delivery_address', default_delivery_address)
         )
 
+        # Добавляем товары из корзины в заказ
         for product_id, item in cart.items():
             product_data = get_product_data(product_id)
             if product_data:
@@ -32,9 +41,9 @@ class OrderCreateView(LoginRequiredMixin, View):
                     quantity=item['quantity']
                 )
 
+        # Очищаем корзину
         request.session['cart'] = {}
         return redirect('order_list')
-
 
 class AddToCartView(View):
     def post(self, request, product_id):
@@ -51,7 +60,6 @@ class AddToCartView(View):
         request.session['cart'] = cart
         return redirect('product_list')
 
-
 class OrderListView(LoginRequiredMixin, View):
     """
     Отображение списка заказов для текущего пользователя.
@@ -59,7 +67,6 @@ class OrderListView(LoginRequiredMixin, View):
     def get(self, request):
         orders = Order.objects.filter(user=request.user).prefetch_related('items')
         return render(request, 'orders/order_list.html', {'orders': orders})
-
 
 class CartView(View):
     """
@@ -80,8 +87,6 @@ class CartView(View):
         cart_items = get_cart_items(cart)  # Используем сервис
         return render(request, 'orders/cart.html', {'cart_items': cart_items})
 
-from core.services import get_user_orders
-
 class MyOrdersView(LoginRequiredMixin, ListView):
     template_name = 'users/my_orders.html'
     context_object_name = 'orders'
@@ -89,7 +94,6 @@ class MyOrdersView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # Используем сервисный слой для получения заказов
         return get_user_orders(self.request.user)
-
 
 class OrderDetailView(LoginRequiredMixin, DetailView):
     template_name = 'users/order_detail.html'
@@ -109,7 +113,6 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
         context['items'] = get_order_items(self.object)
         return context
 
-
 class BuyAgainItemView(View):
     def get(self, request, item_id):
         item = get_object_or_404(OrderItem, id=item_id)
@@ -125,7 +128,6 @@ class BuyAgainItemView(View):
 
         request.session['cart'] = cart
         return redirect('cart_view')
-
 
 class ReorderView(View):
     def get(self, request, order_id):
@@ -143,7 +145,6 @@ class ReorderView(View):
 
         request.session['cart'] = cart
         return redirect('cart_view')
-
 
 class UpdateCartView(View):
     def post(self, request, product_id):
@@ -164,3 +165,12 @@ class RemoveFromCartView(View):
         cart.pop(str(product_id), None)
         request.session['cart'] = cart
         return redirect('cart_view')
+
+def admin_get_orders(request):
+    # if not request.user.is_staff:  # Проверка роли администратора
+    #     return JsonResponse({"status": "error", "message": "Доступ запрещен"}, status=403)
+
+    # Получаем заказы через слой core
+    response = get_admin_orders()
+    return JsonResponse(response)
+

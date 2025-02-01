@@ -28,6 +28,11 @@ import os
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID')
+
+import mimetypes
+
+mimetypes.add_type("image/webp", ".webp", strict=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
