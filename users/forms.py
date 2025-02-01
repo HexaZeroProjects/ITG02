@@ -19,6 +19,8 @@ class CustomUserCreationForm(UserCreationForm):
                 user=user,
                 phone=self.cleaned_data['phone'],
                 address=self.cleaned_data['address']
+
+
             )
         return user
 
@@ -32,4 +34,4 @@ class CustomSetPasswordForm(SetPasswordForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['phone', 'address']
+        fields = ['phone', 'address', 'telegram_id']

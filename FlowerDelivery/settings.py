@@ -22,11 +22,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-lvz!=j&876b(jzi^uasxmj-!^dczi0nzke@gqy-a2^vl6z-j^n'
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -44,6 +50,7 @@ INSTALLED_APPS = [
     'mngorder',
     'analytics',
     'users',
+    'telegram_bot',
 ]
 
 MIDDLEWARE = [

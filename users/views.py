@@ -3,6 +3,12 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from .forms import CustomUserCreationForm, CustomPasswordResetForm, CustomSetPasswordForm
+from django.views.generic.edit import UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from .models import UserProfile
+from .forms import UserProfileForm
+
 
 class RegisterView(CreateView):
     form_class = CustomUserCreationForm
@@ -48,11 +54,7 @@ class CustomLoginView(LoginView):
         return '/'  # Главная страница
 
 
-from django.views.generic.edit import UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from .models import UserProfile
-from .forms import UserProfileForm
+
 
 class ProfileView(LoginRequiredMixin, UpdateView):
     model = UserProfile
@@ -62,3 +64,22 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
     def get_object(self):
         return self.request.user.profile
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from core.services_bot import bind_telegram_service
+
+@csrf_exempt
+def bind_telegram(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        email = data.get("email")
+        telegram_id = data.get("telegram_id")
+
+        result = bind_telegram_service(email, telegram_id)
+        return JsonResponse(result)
+
+    return JsonResponse({"status": "error", "message": "Неверный метод запроса"})
