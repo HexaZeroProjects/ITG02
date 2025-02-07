@@ -72,16 +72,7 @@ class CartView(View):
     """
     Отображение корзины пользователя.
     """
-    # def get(self, request):
-    #     cart = request.session.get('cart', {})
-    #     cart_items = []
-    #     for product_id, item in cart.items():
-    #         cart_items.append({
-    #             'product_id': product_id,
-    #             '': product_id,
-    #             'quantity': item['quantity']
-    #         })
-    #     return render(request, 'orders/cart.html', {'cart_items': cart_items})
+
     def get(self, request):
         cart = request.session.get('cart', {})
         cart_items = get_cart_items(cart)  # Используем сервис

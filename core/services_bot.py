@@ -44,62 +44,80 @@ def get_user_role(telegram_id):
         print(f"👤 Пользователь {telegram_id} - Обычный пользователь!")
         return "user"
 
-from orders.models import Order
-from catalog.models import Product
-from users.models import UserProfile
+from django.db import transaction
 
-def create_order(product_id, address, phone, telegram_id):
-    """Создаёт заказ в базе данных Django."""
+from orders.models import Order, OrderItem
+
+def get_user_orders(telegram_id):
+    """Получает список заказов пользователя по его Telegram ID."""
     try:
-        # Проверяем, есть ли пользователь с таким telegram_id
         profile = UserProfile.objects.filter(telegram_id=telegram_id).first()
         if not profile:
-            return {"status": "error", "message": "Пользователь не найден в системе"}
+            return {"status": "error", "message": "Пользователь не найден"}
+
+        # Получаем все заказы пользователя
+        orders = Order.objects.filter(user=profile.user).order_by("-created_at")
+        if not orders.exists():
+            return {"status": "empty", "message": "У вас пока нет заказов"}
+
+        order_list = []
+        for order in orders:
+            items = OrderItem.objects.filter(order=order)
+            items_text = "\n".join([f"{item.product.name} - {item.quantity} шт." for item in items])
+
+            order_list.append(
+                f"📦 Заказ №{order.id} от {order.created_at.strftime('%d.%m.%Y %H:%M')}\n"
+                f"📍 Адрес: {order.delivery_address}\n"
+                f"🔹 Статус: {order.get_status_display()}\n"
+                f"🛒 Состав:\n{items_text}\n"
+                f"--------------------------"
+            )
+
+        return {"status": "success", "orders": "\n".join(order_list)}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+
+
+def create_order(telegram_id, address, product_id, quantity=1):
+    """Создаёт заказ в базе Django, учитывая модель Order и OrderItem."""
+    try:
+        # Проверяем, есть ли пользователь
+        profile = UserProfile.objects.filter(telegram_id=telegram_id).first()
+        if not profile:
+            return {"status": "error", "message": "Пользователь не найден"}
 
         # Проверяем, есть ли товар
         product = Product.objects.filter(id=product_id).first()
         if not product:
             return {"status": "error", "message": "Товар не найден"}
 
-        # Создаём заказ
-        order = Order.objects.create(
-            user=profile.user,  # Привязываем заказ к пользователю
-            product=product,
-            delivery_address=address,
-            phone=phone,
-            status="pending"  # Статус по умолчанию "ожидание подтверждения"
-        )
+        # Используем транзакцию, чтобы всё сохранилось
+        with transaction.atomic():
+            # Создаём заказ
+            order = Order.objects.create(
+                user=profile.user,
+                delivery_address=address,
+                status="pending"
+            )
+            order.save()  # Сохраняем заказ
+
+            # Создаём товар в заказе
+            order_item = OrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=quantity
+            )
+            order_item.save()  # Сохраняем товар
+
         return {"status": "success", "order_id": order.id}
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 
-from orders.models import Order
-
-# def get_admin_orders():
-#     """
-#     Возвращает список заказов для администратора, сгруппированных по ID.
-#     """
-#     orders = Order.objects.all().values("id", "created_at", "delivery_address", "status", "items")
-#     grouped_orders = {}
-#
-#     for order in orders:
-#         order_id = order["id"]
-#         if order_id not in grouped_orders:
-#             grouped_orders[order_id] = {
-#                 "id": order["id"],
-#                 "created_at": order["created_at"],
-#                 "delivery_address": order["delivery_address"],
-#                 "status": order["status"],
-#                 "items": [],
-#             }
-#         grouped_orders[order_id]["items"].append(order["items"])
-#
-#     return {"status": "success", "orders": list(grouped_orders.values())}
-
-from orders.models import Order
-from catalog.models import Product  # Убедитесь, что модель Item импортирована
 
 from datetime import datetime
 
@@ -115,8 +133,6 @@ def format_date(date_value):
     except Exception:
         # Если дата некорректна, возвращаем дефолтное значение
         return "Некорректная дата"
-
-
 
 
 def get_admin_orders():
@@ -316,37 +332,6 @@ def get_analyze_products():
 
 
 
-# from orders.models import Order, OrderItem
-# from catalog.models import Product
-#
-# def get_admin_orders():
-#     """
-#     Возвращает список заказов для администратора, включая названия товаров.
-#     """
-#     orders = Order.objects.all()
-#     result = []
-#
-#     for order in orders:
-#         # Получаем товары заказа
-#         items = OrderItem.objects.filter(order=order)
-#         product_list = []
-#
-#         for item in items:
-#             product = Product.objects.filter(id=item.product_id).first()
-#             if product:
-#                 product_list.append(f"{product.name} (x{item.quantity})")
-#
-#         # Формируем данные о заказе
-#         order_data = {
-#             "id": order.id,
-#             "created_at": order.created_at,
-#             "delivery_address": order.delivery_address,
-#             "status": order.status,
-#             "items": product_list if product_list else ["Нет товаров"],
-#         }
-#         result.append(order_data)
-#
-#     return {"status": "success", "orders": result}
 
 from catalog.models import Product
 
