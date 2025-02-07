@@ -11,18 +11,42 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'password1', 'password2', 'phone', 'address')
 
+    # def save(self, commit=True):
+    #     user = super().save(commit=False)
+    #     if commit:
+    #         user.save()
+    #         UserProfile.objects.create(
+    #             user=user,
+    #             phone=self.cleaned_data['phone'],
+    #             address=self.cleaned_data['address']
+    #
+    #
+    #         )
+    #     return user
+    # def save(self, commit=True):
+    #     user = super().save(commit=False)
+    #     if commit:
+    #         user.save()
+    #         # Убедитесь, что профиль создается только при отсутствии
+    #         UserProfile.objects.get_or_create(
+    #             user=user,
+    #             defaults={
+    #                 'phone': self.cleaned_data['phone'],
+    #                 'address': self.cleaned_data['address']
+    #             }
+    #         )
+    #     return user
     def save(self, commit=True):
-        user = super().save(commit=False)
+        user = super().save(commit=False)  # Сохраняем User без сохранения в базу
         if commit:
-            user.save()
-            UserProfile.objects.create(
-                user=user,
-                phone=self.cleaned_data['phone'],
-                address=self.cleaned_data['address']
-
-
-            )
+            user.save()  # Сохраняем User в базу
+            # Создаем или обновляем профиль пользователя с переданными данными
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile.phone = self.cleaned_data['phone']
+            profile.address = self.cleaned_data['address']
+            profile.save()  # Сохраняем профиль
         return user
+
 
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(label="Email", max_length=254)

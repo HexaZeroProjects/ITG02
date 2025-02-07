@@ -32,6 +32,7 @@
                     {% endif %}
                 {% else %}
                     <!-- Меню для гостя -->
+                    <a href="{% url 'register' %}" class="btn btn-primary me-2">Регистрация</a>
                     <a href="{% url 'login' %}" class="btn btn-primary">Войти</a>
                 {% endif %}
             </div>
