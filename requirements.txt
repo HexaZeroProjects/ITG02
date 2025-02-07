@@ -1,6 +1,10 @@
 Django==4.2.6
-djangorestframework==3.14.0
+djangorestframework==3.15.2
 aiogram==3.0.0b7
 django-cors-headers==4.0.0
 Pillow==10.0.1
 plotly
+python-dotenv
+requests
+pytest-mock
+pytest

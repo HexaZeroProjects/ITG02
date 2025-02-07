@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    phone = models.CharField(max_length=15, blank=True, null=True)
+    phone = models.CharField(max_length=30, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     telegram_id = models.CharField(max_length=100, blank=True, null=True, unique=True)  # Новое поле
 

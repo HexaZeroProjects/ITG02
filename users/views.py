@@ -65,6 +65,11 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     def get_object(self):
         return self.request.user.profile
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        form.save()  # Явно сохраняем изменения
+        return response
+
 
 
 from django.http import JsonResponse

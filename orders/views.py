@@ -102,7 +102,8 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     def get_object(self):
         order_id = self.kwargs.get('pk')
         # Используем сервисный слой для получения заказа
-        order = get_order_by_id(order_id, self.request.user)
+        # order = get_order_by_id(order_id, self.request.user)
+        order = get_order_by_id(order_id)
         if not order:
             raise Http404("Заказ не найден")
         return order
