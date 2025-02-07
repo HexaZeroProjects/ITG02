@@ -23,6 +23,56 @@ def bind_telegram_service(email, telegram_id):
     return {"status": "error", "message": "Пользователь не найден или профиль отсутствует"}
 
 
+from users.models import UserProfile  # Импортируем профиль пользователя
+
+
+def get_user_role(telegram_id):
+    """Определяет роль пользователя (admin, staff, user)."""
+    profile = UserProfile.objects.filter(telegram_id=telegram_id).select_related("user").first()
+
+    if not profile:
+        print(f"⚠️ Пользователь с Telegram ID {telegram_id} не найден!")  # Лог в консоль
+        return "unknown"
+
+    if profile.user.is_superuser:
+        print(f"👑 Пользователь {telegram_id} - Суперадмин!")
+        return "admin"
+    elif profile.user.is_staff:
+        print(f"👨‍💼 Пользователь {telegram_id} - Персонал!")
+        return "staff"
+    else:
+        print(f"👤 Пользователь {telegram_id} - Обычный пользователь!")
+        return "user"
+
+from orders.models import Order
+from catalog.models import Product
+from users.models import UserProfile
+
+def create_order(product_id, address, phone, telegram_id):
+    """Создаёт заказ в базе данных Django."""
+    try:
+        # Проверяем, есть ли пользователь с таким telegram_id
+        profile = UserProfile.objects.filter(telegram_id=telegram_id).first()
+        if not profile:
+            return {"status": "error", "message": "Пользователь не найден в системе"}
+
+        # Проверяем, есть ли товар
+        product = Product.objects.filter(id=product_id).first()
+        if not product:
+            return {"status": "error", "message": "Товар не найден"}
+
+        # Создаём заказ
+        order = Order.objects.create(
+            user=profile.user,  # Привязываем заказ к пользователю
+            product=product,
+            delivery_address=address,
+            phone=phone,
+            status="pending"  # Статус по умолчанию "ожидание подтверждения"
+        )
+        return {"status": "success", "order_id": order.id}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 from orders.models import Order
@@ -226,6 +276,8 @@ def get_image_url(image_path):
     return f"{base_url}/media/{image_path}"
 
 
+
+
 def get_analyze_products():
     """
     Анализ товаров (топ-3 и антитоп-3 продаваемых товаров).
@@ -295,3 +347,31 @@ def get_analyze_products():
 #         result.append(order_data)
 #
 #     return {"status": "success", "orders": result}
+
+from catalog.models import Product
+
+def get_products_by_page(page: int, per_page: int = 5):
+    """Получает список товаров постранично."""
+    products = Product.objects.all().values("id", "name", "price", "image")  # Загружаем товары
+    total_products = len(products)  # Всего товаров в базе
+
+    start = (page - 1) * per_page
+    end = start + per_page
+    products_list = list(products)[start:end]
+
+    return {
+        "products": products_list,
+        "total": total_products,
+        "current_page": page,
+        "total_pages": (total_products // per_page) + (1 if total_products % per_page else 0)
+    }
+
+
+from users.models import User  # Импортируем модель пользователя
+
+from users.models import UserProfile  # Импортируем профиль пользователя
+
+def is_user_registered(telegram_id):
+    """Проверяет, есть ли пользователь с таким Telegram ID в UserProfile."""
+    return UserProfile.objects.filter(telegram_id=telegram_id).exists()
+
